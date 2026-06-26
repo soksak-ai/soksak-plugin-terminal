@@ -94,6 +94,8 @@ export interface TerminalInstance {
   sendInput(data: string): void;
   paste(text: string): void;
   readBuffer(lines?: number): string;
+  /** 화면에 직접 write(PTY 우회 — 복원 텍스트 등 inert, 재실행 0). */
+  write(data: string): void;
   clear(): void;
   applySettings(s: TermSettings): void;
 }
@@ -362,6 +364,7 @@ export async function createTerminal(
       sendInput: () => {},
       paste: () => {},
       readBuffer: () => "",
+      write: () => {},
       clear: () => {},
       applySettings: () => {},
     };
@@ -538,6 +541,7 @@ export async function createTerminal(
       for (let i = end + 1 - want; i <= end; i++) out.push(line(i));
       return out.join("\n");
     },
+    write: (data: string) => term.write(data), // 화면 직접(PTY 우회 — 복원 inert)
     clear: () => term.clear(),
     applySettings: (next: TermSettings) => {
       // [SWAP: settings] 원본은 next 의 모든 필드를 무조건 대입했다(코어 TerminalSettings 는
